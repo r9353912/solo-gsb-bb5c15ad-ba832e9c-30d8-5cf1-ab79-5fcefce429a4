@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小剧场灯光 Cue 排演</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>🎭 小剧场灯光 Cue 排演</h1>
+    <nav class="tabs">
+      <button class="tab active" data-tab="player">▶ 排演播放</button>
+      <button class="tab" data-tab="fixtures">💡 灯具</button>
+      <button class="tab" data-tab="cues">📝 草稿 Cue</button>
+      <button class="tab" data-tab="versions">📦 演出版本</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ 播放 ============ -->
+    <section id="tab-player" class="tabpanel active">
+      <div class="player-bar">
+        <label>演出版本：
+          <select id="version-select"></select>
+        </label>
+        <span id="playing-badge" class="badge hidden">
+          正在排演 v<span id="playing-no"></span>：本次播放已锁定该版本，草稿修改与重新发布均不影响
+        </span>
+      </div>
+
+      <div class="clock"><span id="time-current">0.00</span><span class="clock-sep">/</span><span id="time-total">0.00</span> s</div>
+
+      <div class="transport">
+        <button id="btn-play" class="primary">▶ 播放</button>
+        <button id="btn-pause" disabled>⏸ 暂停</button>
+        <button id="btn-stop" disabled>⏹ 结束排演</button>
+        <input id="seek" type="range" min="0" max="1000" step="any" value="0" />
+        <label class="jump">跳转到
+          <input id="jump-time" type="number" min="0" step="0.1" /> s
+        </label>
+        <button id="btn-jump">跳转</button>
+      </div>
+
+      <h2>各灯实时亮度</h2>
+      <div id="levels" class="levels"></div>
+
+      <h2>本版本 Cue 时间线（只读）</h2>
+      <div class="table-wrap">
+        <table id="cue-readonly">
+          <thead>
+            <tr><th>Cue #</th><th>灯具</th><th>触发时刻 (s)</th><th>目标亮度</th><th>渐变时长 (s)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 灯具 ============ -->
+    <section id="tab-fixtures" class="tabpanel">
+      <h2>灯具录入（草稿）</h2>
+      <form id="form-fixture" class="inline-form">
+        <input id="fixture-name" placeholder="灯具名称，如：面光 L1" maxlength="64" required />
+        <button class="primary" type="submit">添加灯具</button>
+      </form>
+      <div class="table-wrap">
+        <table id="fixture-table">
+          <thead><tr><th>编号</th><th>名称</th><th>操作</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint">灯具被任何 Cue 引用时不可删除，请先在「草稿 Cue」中移除相关行。</p>
+    </section>
+
+    <!-- ============ 草稿 Cue ============ -->
+    <section id="tab-cues" class="tabpanel">
+      <h2>Cue 编辑（草稿，整批提交）</h2>
+      <p class="hint">
+        规则：按「非负演出秒数」触发；目标亮度 0～100；渐变时长为非负秒数（0 = 瞬变）；
+        同秒触发按 Cue 编号顺序依次生效。任意一行非法都会<strong>拒绝整次提交</strong>。
+      </p>
+      <div class="cue-editor-actions">
+        <button id="btn-add-cue">＋ 新增一行</button>
+        <button id="btn-clear-cues">清空全部 Cue</button>
+        <button id="btn-save-cues" class="primary">保存草稿 Cue（整批校验）</button>
+        <span id="cue-save-status" class="save-status"></span>
+      </div>
+      <div class="table-wrap">
+        <table id="cue-table">
+          <thead>
+            <tr><th>Cue #</th><th>灯具</th><th>触发时刻 s</th><th>目标亮度 0–100</th><th>渐变时长 s</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 版本 ============ -->
+    <section id="tab-versions" class="tabpanel">
+      <h2>发布演出版本（不可变）</h2>
+      <p class="hint">发布后生成只追加的快照。播放器始终读取开始排演时锁定的版本；之后编辑草稿或再次发布都不会改变在播结果。</p>
+      <form id="form-publish" class="inline-form">
+        <input id="publish-note" placeholder="版本备注（可选），如：首演联排" maxlength="200" />
+        <button class="primary" type="submit">📸 发布当前草稿为新版本</button>
+      </form>
+      <div class="table-wrap">
+        <table id="version-table">
+          <thead><tr><th>版本</th><th>备注</th><th>发布时间 (UTC)</th><th>灯具/Cue</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/shared/engine.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
